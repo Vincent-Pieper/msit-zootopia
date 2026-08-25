@@ -24,13 +24,14 @@ def get_animals_info(animals_data: list[dict]) -> str:
     all_animals_info = ""
     for animal in animals_data:
         animal_infos = get_animal_infos(animal)
-        all_animals_info += animal_infos
+        all_animals_info += animal_infos + "\n"
+
     return all_animals_info
 
 
 def get_animal_infos(animal: dict) -> str:
     """Generate the output string for one animal."""
-    output = ""
+    output = "<li class='cards__item'>"
     categories = get_categories()
 
     for category in categories:
@@ -47,8 +48,8 @@ def get_animal_infos(animal: dict) -> str:
 
         if skip:
             continue
-        output += f"{category.title()}: {value}\n"
-    output += "\n"
+        output += f"{category.title()}: {value}<br/>\n"
+    output += "</li>"
     return output
 
 
