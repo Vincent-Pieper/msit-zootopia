@@ -7,14 +7,30 @@ def load_data(file_path):
         return json.load(file_r)
 
 
-def show_animals(animals_data: list[dict]):
-    """Send each animal to the print function."""
+def load_html(file_path):
+    """Load an HTML file."""
+    with open(file_path, "r") as html_r:
+        return html_r.read()
+
+
+def save_html(file_path: str, file: str):
+    """Save content to an HTML file."""
+    with open(file_path, "w") as html_w:
+        html_w.write(file)
+
+
+def get_animals_info(animals_data: list[dict]) -> str:
+    """Generate the output string for all animals."""
+    all_animals_info = ""
     for animal in animals_data:
-        print_animal(animal)
+        animal_infos = get_animal_infos(animal)
+        all_animals_info += animal_infos
+    return all_animals_info
 
 
-def print_animal(animal: dict):
-    """Print the available categories for one animal."""
+def get_animal_infos(animal: dict) -> str:
+    """Generate the output string for one animal."""
+    output = ""
     categories = get_categories()
 
     for category in categories:
@@ -25,14 +41,15 @@ def print_animal(animal: dict):
         for step in path:
             try:
                 value = value[step]
-            except KeyError, IndexError:
+            except (KeyError, IndexError):
                 skip = True
                 break
 
         if skip:
             continue
-        print(f"{category.title()}: {value}")
-    print()
+        output += f"{category.title()}: {value}\n"
+    output += "\n"
+    return output
 
 
 def get_categories() -> dict[str, list[str | int]]:
@@ -45,10 +62,18 @@ def get_categories() -> dict[str, list[str | int]]:
     }
 
 
+def generate_animals_html(animals_info: str):
+    """Create an HTML file by inserting the animal data into the template."""
+    template = load_html("animals_template.html")
+    new_html = template.replace("__REPLACE_ANIMALS_INFO__", animals_info)
+    save_html("animals.html", new_html)
+
+
 def main():
-    """Load the animal data and display all animals."""
+    """Load the animal data and integrate it into HTML."""
     animals_data = load_data("animals_data.json")
-    show_animals(animals_data)
+    animals_info = get_animals_info(animals_data)
+    generate_animals_html(animals_info)
 
 
 if __name__ == "__main__":
