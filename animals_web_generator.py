@@ -48,8 +48,13 @@ def get_animal_infos(animal: dict) -> str:
 
         if skip:
             continue
-        output += f"{category.title()}: {value}<br/>\n"
-    output += "</li>"
+        if category == "name":
+            output += f"<div class='card__title'>{value}</div>\n"
+            output += "<p class='card__text'>"
+        else:
+            output += f"<strong>{category.title()}: </strong> {value}<br/>\n"
+
+    output += "</p>\n</li>"
     return output
 
 
