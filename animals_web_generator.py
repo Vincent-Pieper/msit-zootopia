@@ -19,42 +19,40 @@ def save_html(file_path: str, file: str):
         html_w.write(file)
 
 
-def get_animals_info(animals_data: list[dict]) -> str:
+def serialize_animals(animals_data: list[dict]) -> str:
     """Generate the output string for all animals."""
     all_animals_info = ""
     for animal in animals_data:
-        animal_infos = get_animal_infos(animal)
+        animal_infos = serialize_animal(animal)
         all_animals_info += animal_infos + "\n"
 
     return all_animals_info
 
 
-def get_animal_infos(animal: dict) -> str:
+def serialize_animal(animal: dict) -> str:
     """Generate the output string for one animal."""
     output = "<li class='cards__item'>"
     categories = get_categories()
+    paragraph_open = False
 
     for category in categories:
         value = animal
         path = categories[category]
-        skip = False
 
-        for step in path:
-            try:
-                value = value[step]
-            except (KeyError, IndexError):
-                skip = True
-                break
-
+        value, skip = get_value(value, path)
         if skip:
             continue
-        if category == "name":
-            output += f"<div class='card__title'>{value}</div>\n"
-            output += "<p class='card__text'>"
-        else:
-            output += f"<strong>{category.title()}: </strong> {value}<br/>\n"
 
-    output += "</p>\n</li>"
+        category_output, paragraph_open = write_html_body(
+            category,
+            value,
+            paragraph_open
+        )
+        output += category_output
+
+    if paragraph_open:
+        output += "</p>\n"
+    output += "</li>"
     return output
 
 
@@ -63,9 +61,43 @@ def get_categories() -> dict[str, list[str | int]]:
     return {
         "name": ["name"],
         "diet": ["characteristics", "diet"],
+        "predators": ["characteristics", "predators"],
         "location": ["locations", 0],
-        "type": ["characteristics", "type"]
+        "type": ["characteristics", "type"],
+        "color": ["characteristics", "color"],
+        "skin type": ["characteristics", "skin_type"],
+        "top speed": ["characteristics", "top_speed"],
+        "lifespan": ["characteristics", "lifespan"],
+        "weight": ["characteristics", "weight"],
+        "length": ["characteristics", "length"]
     }
+
+
+def get_value(value, path: list[str | int]) -> tuple[str | None, bool]:
+    """Returns the values and handles missing data"""
+    skip = False
+    for step in path:
+        try:
+            value = value[step]
+        except (KeyError, IndexError):
+            skip = True
+            value = None
+            break
+    return value, skip
+
+
+def write_html_body(category: str, value: str, paragraph_open: bool) -> tuple[str, bool]:
+    """Writes the HTML body for an animal"""
+    category_output = ""
+
+    if category == "name":
+        category_output += f"<div class='card__title'>{value}</div>\n"
+    else:
+        if not paragraph_open:
+            category_output += "<p class='card__text'>"
+            paragraph_open = True
+        category_output += f"<strong>{category.title()}: </strong> {value}<br/>\n"
+    return category_output, paragraph_open
 
 
 def generate_animals_html(animals_info: str):
@@ -78,7 +110,7 @@ def generate_animals_html(animals_info: str):
 def main():
     """Load the animal data and integrate it into HTML."""
     animals_data = load_data("animals_data.json")
-    animals_info = get_animals_info(animals_data)
+    animals_info = serialize_animals(animals_data)
     generate_animals_html(animals_info)
 
 
