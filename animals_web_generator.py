@@ -51,8 +51,9 @@ def serialize_animal(animal: dict) -> str:
         output += category_output
 
     if paragraph_open:
-        output += "</p>\n"
-    output += "</li>"
+        output += "</ul>\n"
+        output += "</div>\n"
+    output += "</li>\n"
     return output
 
 
@@ -94,9 +95,15 @@ def write_html_body(category: str, value: str, paragraph_open: bool) -> tuple[st
         category_output += f"<div class='card__title'>{value}</div>\n"
     else:
         if not paragraph_open:
-            category_output += "<p class='card__text'>"
+            category_output += "<div class='card__text'>\n"
+            category_output += "<ul class='card__list'>"
             paragraph_open = True
-        category_output += f"<strong>{category.title()}: </strong> {value}<br/>\n"
+
+        category_output += (
+            f"<li class='card__list-item'>"
+            f"<strong>{category.title()}: </strong> {value}"
+            f"</li>\n"
+        )
     return category_output, paragraph_open
 
 
