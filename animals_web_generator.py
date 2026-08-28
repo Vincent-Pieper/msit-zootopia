@@ -75,7 +75,7 @@ def get_categories() -> dict[str, list[str | int]]:
 
 
 def get_value(value, path: list[str | int]) -> tuple[str | None, bool]:
-    """Returns the values and handles missing data"""
+    """Return a value and handle missing data."""
     skip = False
     for step in path:
         try:
@@ -87,8 +87,12 @@ def get_value(value, path: list[str | int]) -> tuple[str | None, bool]:
     return value, skip
 
 
-def write_html_body(category: str, value: str, paragraph_open: bool) -> tuple[str, bool]:
-    """Writes the HTML body for an animal"""
+def write_html_body(
+        category: str,
+        value: str,
+        paragraph_open: bool
+) -> tuple[str, bool]:
+    """Write the HTML body for an animal."""
     category_output = ""
 
     if category == "name":
@@ -107,6 +111,75 @@ def write_html_body(category: str, value: str, paragraph_open: bool) -> tuple[st
     return category_output, paragraph_open
 
 
+def get_skin_types(animals_data: list[dict]) -> list[str]:
+    """Return all available skin types."""
+    skin_types = set()
+
+    for animal in animals_data:
+        skin_type, skip = get_value(
+            animal,
+            ["characteristics", "skin_type"]
+        )
+
+        if not skip:
+            skin_types.add(skin_type)
+
+    return sorted(skin_types)
+
+
+def choose_skin_type(skin_types: list[str]) -> str | None:
+    """Let the user choose an available skin type."""
+    print("Available skin types:")
+
+    for index, skin_type in enumerate(skin_types, start=1):
+        print(f"{index}. {skin_type}")
+
+    all_option = len(skin_types) + 1
+    print(f"{all_option}. All skin types")
+
+    user_input = input("Choose a skin type: ")
+    choice = validate_skin_type_choice(user_input, all_option)
+
+    if choice == all_option:
+        return None
+
+    return skin_types[choice - 1]
+
+
+def validate_skin_type_choice(user_input: str, max_choice: int) -> int:
+    """Validate the user's skin type choice."""
+    while True:
+        try:
+            choice = int(user_input)
+        except ValueError:
+            user_input = input("Please enter a number: ")
+            continue
+
+        if 1 <= choice <= max_choice:
+            return choice
+
+        user_input = input(f"Please enter a number between 1 and {max_choice}: ")
+
+
+def filter_animals_by_skin_type(
+        animals_data: list[dict],
+        selected_skin_type: str
+) -> list[dict]:
+    """Return animals matching the selected skin type."""
+    filtered_animals = []
+
+    for animal in animals_data:
+        skin_type, skip = get_value(
+            animal,
+            ["characteristics", "skin_type"]
+        )
+
+        if not skip and skin_type == selected_skin_type:
+            filtered_animals.append(animal)
+
+    return filtered_animals
+
+
 def generate_animals_html(animals_info: str):
     """Create an HTML file by inserting the animal data into the template."""
     template = load_html("animals_template.html")
@@ -115,12 +188,23 @@ def generate_animals_html(animals_info: str):
 
 
 def main():
-    """Load the animal data and integrate it into HTML."""
+    """Load, filter and integrate the animal data into HTML."""
     animals_data = load_data("animals_data.json")
-    animals_info = serialize_animals(animals_data)
+
+    skin_types = get_skin_types(animals_data)
+    selected_skin_type = choose_skin_type(skin_types)
+
+    if selected_skin_type is None:
+        filtered_animals = animals_data
+    else:
+        filtered_animals = filter_animals_by_skin_type(
+            animals_data,
+            selected_skin_type
+        )
+
+    animals_info = serialize_animals(filtered_animals)
     generate_animals_html(animals_info)
 
 
 if __name__ == "__main__":
     main()
-
