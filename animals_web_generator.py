@@ -1,21 +1,46 @@
-import json
+import requests
+from dotenv import load_dotenv
+import os
 
 
-def load_data(file_path):
-    """Load a JSON file."""
-    with open(file_path, "r") as file_r:
-        return json.load(file_r)
+load_dotenv()
+
+
+def fetch_animals() -> list[dict]:
+    """Fetch animal data from the API."""
+    url = "https://api.api-ninjas.com/v1/animals"
+    params = get_params()
+    headers = get_headers()
+    response = requests.get(url, params=params, headers=headers)
+    return response.json()
+
+
+def get_params() -> dict[str, str]:
+    """Return the API query parameters."""
+    params = {
+        "name": "Fox"
+    }
+    return params
+
+
+def get_headers() -> dict[str, str | None]:
+    """Return the API request headers."""
+    api_key = os.getenv("API_NINJAS_KEY")
+    headers = {
+        "X-Api-Key": api_key
+    }
+    return headers
 
 
 def load_html(file_path):
     """Load an HTML file."""
-    with open(file_path, "r") as html_r:
+    with open(file_path, "r", encoding="utf-8") as html_r:
         return html_r.read()
 
 
 def save_html(file_path: str, file: str):
     """Save content to an HTML file."""
-    with open(file_path, "w") as html_w:
+    with open(file_path, "w", encoding="utf-8") as html_w:
         html_w.write(file)
 
 
@@ -197,7 +222,7 @@ def generate_animals_html(animals_info: str):
 
 def main():
     """Load, filter and integrate the animal data into HTML."""
-    animals_data = load_data("animals_data.json")
+    animals_data = fetch_animals()
 
     skin_types = get_skin_types(animals_data)
     selected_skin_type = choose_skin_type(skin_types)
