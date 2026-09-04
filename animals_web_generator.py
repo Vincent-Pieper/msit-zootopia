@@ -1,35 +1,4 @@
-import requests
-from dotenv import load_dotenv
-import os
-
-
-load_dotenv()
-
-
-def fetch_animals(user_animal: str) -> list[dict]:
-    """Fetch animal data from the API."""
-    url = "https://api.api-ninjas.com/v1/animals"
-    params = get_params(user_animal)
-    headers = get_headers()
-    response = requests.get(url, params=params, headers=headers)
-    return response.json()
-
-
-def get_params(user_animal: str) -> dict[str, str]:
-    """Return the API query parameters."""
-    params = {
-        "name": user_animal
-    }
-    return params
-
-
-def get_headers() -> dict[str, str | None]:
-    """Return the API request headers."""
-    api_key = os.getenv("API_NINJAS_KEY")
-    headers = {
-        "X-Api-Key": api_key
-    }
-    return headers
+import data_fetcher
 
 
 def load_html(file_path):
@@ -45,7 +14,7 @@ def save_html(file_path: str, file: str):
 
 
 def get_user_animal() -> str:
-    """Gets the users choosen animal"""
+    """Gets the animal name from the user."""
     while True:
         user_animal = input("Enter a name of an animal: ").strip()
 
@@ -235,7 +204,7 @@ def generate_animals_html(animals_info: str):
 def main():
     """Load, filter and integrate the animal data into HTML."""
     user_animal = get_user_animal()
-    animals_data = fetch_animals(user_animal)
+    animals_data = data_fetcher.fetch_data(user_animal)
 
     if not animals_data:
         animals_info = f"<h2>No animals found for '{user_animal}'.</h2>"
