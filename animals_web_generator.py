@@ -237,6 +237,11 @@ def main():
     user_animal = get_user_animal()
     animals_data = fetch_animals(user_animal)
 
+    if not animals_data:
+        animals_info = f"<h2>No animals found for '{user_animal}'.</h2>"
+        generate_animals_html(animals_info)
+        return
+
     skin_types = get_skin_types(animals_data)
     selected_skin_type = choose_skin_type(skin_types)
 
