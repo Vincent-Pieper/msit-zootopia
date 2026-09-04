@@ -6,19 +6,19 @@ import os
 load_dotenv()
 
 
-def fetch_animals() -> list[dict]:
+def fetch_animals(user_animal: str) -> list[dict]:
     """Fetch animal data from the API."""
     url = "https://api.api-ninjas.com/v1/animals"
-    params = get_params()
+    params = get_params(user_animal)
     headers = get_headers()
     response = requests.get(url, params=params, headers=headers)
     return response.json()
 
 
-def get_params() -> dict[str, str]:
+def get_params(user_animal: str) -> dict[str, str]:
     """Return the API query parameters."""
     params = {
-        "name": "Fox"
+        "name": user_animal
     }
     return params
 
@@ -42,6 +42,17 @@ def save_html(file_path: str, file: str):
     """Save content to an HTML file."""
     with open(file_path, "w", encoding="utf-8") as html_w:
         html_w.write(file)
+
+
+def get_user_animal() -> str:
+    """Gets the users choosen animal"""
+    while True:
+        user_animal = input("Enter a name of an animal: ").strip()
+
+        if user_animal:
+            return user_animal
+
+        print("Please enter an animal name.")
 
 
 def get_skin_types(animals_data: list[dict]) -> list[str]:
@@ -218,11 +229,13 @@ def generate_animals_html(animals_info: str):
     template = load_html("animals_template.html")
     new_html = template.replace("__REPLACE_ANIMALS_INFO__", animals_info)
     save_html("animals.html", new_html)
+    print("Website was successfully generated to the file animals.html.")
 
 
 def main():
     """Load, filter and integrate the animal data into HTML."""
-    animals_data = fetch_animals()
+    user_animal = get_user_animal()
+    animals_data = fetch_animals(user_animal)
 
     skin_types = get_skin_types(animals_data)
     selected_skin_type = choose_skin_type(skin_types)
